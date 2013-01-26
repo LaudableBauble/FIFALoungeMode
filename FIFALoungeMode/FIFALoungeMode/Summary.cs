@@ -12,6 +12,7 @@ namespace FIFALoungeMode
     {
         #region Fields
         private static Summary _Instance;
+        private int _CurrentFIFAVersion;
         private int _LastProfileId;
         private int _LastTeamId;
         private int _LastGameId;
@@ -46,6 +47,7 @@ namespace FIFALoungeMode
         private void Initialize(int lastProfileId, int lastTeamId, int lastGameId, int lastPlayerId)
         {
             //Initialize some stuff.
+            _CurrentFIFAVersion = 13;
             _LastProfileId = lastProfileId;
             _LastTeamId = lastTeamId;
             _LastGameId = lastGameId;
@@ -165,9 +167,9 @@ namespace FIFALoungeMode
             return form;
         }
         /// <summary>
-        /// Get a dictionary of all top scorers.
+        /// Get a dictionary of all scorers.
         /// </summary>
-        public Dictionary<Player, int> GetTopScorers()
+        public Dictionary<Player, int> GetScorers()
         {
             //The complete and final list of top scorers.
             Dictionary<Player, int> scorers = new Dictionary<Player, int>();
@@ -234,12 +236,16 @@ namespace FIFALoungeMode
         /// <summary>
         /// Load everything.
         /// </summary>
-        public void LoadAll()
+        /// <param name="limitToVersion">Whether only data from the current FIFA version will be loaded.</param>
+        public void LoadAll(bool limitToVersion)
         {
+            //Rebuild the team index.
+            Helper.RebuildTeamIndex();
+
             //Load all profiles, teams and games.
             LoadAllProfiles();
             LoadAllTeams();
-            LoadAllGames();
+            LoadAllGames(limitToVersion);
         }
         /// <summary>
         /// Load all profiles.
@@ -278,7 +284,8 @@ namespace FIFALoungeMode
         /// <summary>
         /// Load all games.
         /// </summary>
-        public void LoadAllGames()
+        /// <param name="limitToVersion">Whether only data from the current FIFA version will be loaded.</param>
+        public void LoadAllGames(bool limitToVersion)
         {
             //The list of games.
             _Games.Clear();
@@ -288,8 +295,8 @@ namespace FIFALoungeMode
             {
                 //The game.
                 Game g = Helper.LoadGame(id);
-                //If the game carries substance, ie. not null, add it to the list.
-                if (g != null) { _Games.Add(g); }
+                //If the game carries substance, ie. not null, and if is of the correct FIFA version, add it to the list.
+                if (g != null && limitToVersion ? g.FIFAVersion == Summary.Instance.CurrentFIFAVersion : true) { _Games.Add(g); }
             }
         }
         /// <summary>
@@ -342,6 +349,13 @@ namespace FIFALoungeMode
                 if (_Instance == null) { _Instance = new Summary(0, 0, 0, 0); }
                 return _Instance;
             }
+        }
+        /// <summary>
+        /// The current FIFA version.
+        /// </summary>
+        public int CurrentFIFAVersion
+        {
+            get { return _CurrentFIFAVersion; }
         }
         /// <summary>
         /// The id of the last created profile.

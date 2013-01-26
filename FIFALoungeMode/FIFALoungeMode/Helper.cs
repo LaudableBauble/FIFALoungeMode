@@ -66,7 +66,7 @@ namespace FIFALoungeMode
                 Summary.Instance.LastGameId = int.Parse(xmlDocument.SelectSingleNode("/Summary/LastGameId").InnerText);
 
                 //Force the summary to load everything.
-                Summary.Instance.LoadAll();
+                Summary.Instance.LoadAll(false);
             }
             catch { return; }
         }
@@ -406,7 +406,7 @@ namespace FIFALoungeMode
             List<Team> teams = new List<Team>();
             files.ForEach(file => teams.Add(LoadTeam(file)));
 
-            //Remove any duplicates.
+            //Resolve any duplicates.
 
             //Resave all teams and update team index.
             teams.ForEach(t => SaveTeam(t));
@@ -442,6 +442,10 @@ namespace FIFALoungeMode
             //The id.
             textWriter.WriteStartElement("Id");
             textWriter.WriteValue(game.Id);
+            textWriter.WriteEndElement();
+            //The FIFA version.
+            textWriter.WriteStartElement("FIFAVersion");
+            textWriter.WriteValue(game.FIFAVersion);
             textWriter.WriteEndElement();
             //The date.
             textWriter.WriteStartElement("Date");
@@ -720,6 +724,7 @@ namespace FIFALoungeMode
                 Game game = new Game(int.Parse(xmlDocument.SelectSingleNode("/Game/Id").InnerText));
 
                 //Parse the xml data.
+                game.FIFAVersion = int.Parse(xmlDocument.SelectSingleNode("/Game/FIFAVersion").InnerText);
                 game.Date = DateTime.Parse(xmlDocument.SelectSingleNode("/Game/Date").InnerText);
                 game.ExtraTime = bool.Parse(xmlDocument.SelectSingleNode("/Game/ExtraTime").InnerText);
 

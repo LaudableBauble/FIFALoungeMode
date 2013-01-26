@@ -13,6 +13,7 @@ namespace FIFALoungeMode
     {
         #region Fields
         private int _Id;
+        private int _FIFAVersion;
         private DateTime _Date;
         private bool _ExtraTime;
         private GameFacts _HomeFacts;
@@ -25,7 +26,6 @@ namespace FIFALoungeMode
         /// </summary>
         public Game()
         {
-            //Initialize the game.
             Initialize(-1);
         }
         /// <summary>
@@ -34,7 +34,6 @@ namespace FIFALoungeMode
         /// <param name="id">The id of the game.</param>
         public Game(int id)
         {
-            //Initialize the game.
             Initialize(id);
         }
         #endregion
@@ -44,10 +43,11 @@ namespace FIFALoungeMode
         /// Initialize the game.
         /// </summary>
         /// <param name="id">The id of the game.</param>
-        private void Initialize(int id)
+        protected void Initialize(int id)
         {
             //Initialize some stuff.
             _Id = id;
+            _FIFAVersion = Summary.Instance.CurrentFIFAVersion;
             _Date = DateTime.Now;
             _ExtraTime = false;
             _HomeFacts = new GameFacts(null);
@@ -99,6 +99,14 @@ namespace FIFALoungeMode
         {
             get { return _Id; }
             set { _Id = value; }
+        }
+        /// <summary>
+        /// The FIFA version where this game took place.
+        /// </summary>
+        public int FIFAVersion
+        {
+            get { return _FIFAVersion; }
+            set { _FIFAVersion = value; }
         }
         /// <summary>
         /// When the game was played.

@@ -37,7 +37,6 @@ namespace FIFALoungeMode
             //Rename the controls' text.
             lblHomeShots.Text = "Number of shots:";
             lblHomeShotsOnTarget.Text = "Shots on target:";
-            lblHomeShotAccuracy.Text = "Shot Accuracy:";
             lblHomePassAccuracy.Text = "Pass Accuracy:";
             lblHomeCorners.Text = "Corners:";
             lblHomePossession.Text = "";
@@ -45,7 +44,6 @@ namespace FIFALoungeMode
             lblHomeRedCards.Text = "Red Cards:";
             lblAwayShots.Text = "Number of shots:";
             lblAwayShotsOnTarget.Text = "Shots on target:";
-            lblAwayShotAccuracy.Text = "Shot Accuracy:";
             lblAwayPassAccuracy.Text = "Pass Accuracy:";
             lblAwayCorners.Text = "Corners:";
             lblAwayPossession.Text = "";
@@ -61,9 +59,7 @@ namespace FIFALoungeMode
             grpbHomeTeam.Text = "Home Team";
             grpbAwayTeam.Text = "Away Team";
 
-            nmrHomeShotAccuracy.Value = 70;
             nmrHomePassAccuracy.Value = 80;
-            nmrAwayShotAccuracy.Value = 70;
             nmrAwayPassAccuracy.Value = 80;
 
             //Add items to the comboboxes.
@@ -90,6 +86,9 @@ namespace FIFALoungeMode
             //Change the ball possession to 50-50.
             trkbPossession.Maximum = 100;
             trkbPossession.Value = 50;
+
+            //Set the form's size.
+            this.Size = new System.Drawing.Size(629, 572);
         }
 
         /// <summary>
@@ -111,7 +110,7 @@ namespace FIFALoungeMode
                 facts.Team = facts.Profile.Team;
                 facts.Shots = (int)nmrHomeShots.Value;
                 facts.ShotsOnTarget = (int)nmrHomeShotsOnTarget.Value;
-                facts.ShotAccuracy = (int)nmrHomeShotAccuracy.Value;
+                facts.ShotAccuracy = facts.ShotsOnTarget == 0 ? 0 : (int)(100 * (float)facts.ShotsOnTarget / (float)facts.ShotsOnTarget);
                 facts.PassAccuracy = (int)nmrHomePassAccuracy.Value;
                 facts.Corners = (int)nmrHomeCorners.Value;
                 facts.Possession = (100 - trkbPossession.Value);
@@ -131,7 +130,7 @@ namespace FIFALoungeMode
                 facts.Team = facts.Profile.Team;
                 facts.Shots = (int)nmrAwayShots.Value;
                 facts.ShotsOnTarget = (int)nmrAwayShotsOnTarget.Value;
-                facts.ShotAccuracy = (int)nmrAwayShotAccuracy.Value;
+                facts.ShotAccuracy = facts.ShotsOnTarget == 0 ? 0 : (int)(100 * (float)facts.ShotsOnTarget / (float)facts.ShotsOnTarget);
                 facts.PassAccuracy = (int)nmrAwayPassAccuracy.Value;
                 facts.Corners = (int)nmrAwayCorners.Value;
                 facts.Possession = trkbPossession.Value;

@@ -22,7 +22,6 @@ namespace FIFALoungeMode
         /// </summary>
         public EditTeams()
         {
-            //Initialize the form.
             Initialize();
         }
         #endregion
@@ -199,6 +198,9 @@ namespace FIFALoungeMode
 
             //Save the team.
             Helper.SaveTeam(_Team);
+
+            //Tell the summary to reload the profiles.
+            Summary.Instance.LoadAllProfiles();
 
             //Let go of the player and the team.
             _Team = null;

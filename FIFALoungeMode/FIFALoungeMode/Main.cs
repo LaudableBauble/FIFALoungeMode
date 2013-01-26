@@ -18,6 +18,7 @@ namespace FIFALoungeMode
         private ListViewColumnSorter _StandingsSorter;
         private ListViewColumnSorter _ScorersSorter;
         private ListViewColumnSorter _GamesSorter;
+        private bool _LimitToVersion;
         #endregion
 
         #region Constructors
@@ -33,9 +34,14 @@ namespace FIFALoungeMode
             this.Width = 600;
             this.Height = 300;
 
+            //Don't limit to current FIFA version.
+            _LimitToVersion = false;
+
             //Load the summary and all profiles.
             Helper.LoadSummary();
-            Dictionary<Player, int> scores = Summary.Instance.GetTopScorers();
+
+            //Add a label to the FIFA version checkbox.
+            ckbVersion.Text = "Limit to FIFA " + Summary.Instance.CurrentFIFAVersion;
 
             //Create the tab control.
             tabMain.Width = this.Width;
@@ -79,6 +85,7 @@ namespace FIFALoungeMode
             mnuItemAddGame.Click += OnAddGameMenuClick;
             mnuItemEditProfiles.Click += OnEditProfilesMenuClick;
             mnuItemEditTeams.Click += OnEditTeamsMenuClick;
+            ckbVersion.CheckedChanged += OnLimitVersionCheck;
         }
         #endregion
 
@@ -155,10 +162,10 @@ namespace FIFALoungeMode
             int index = 1;
 
             //Add the top scorers.
-            foreach (KeyValuePair<Player, int> pair in Summary.Instance.GetTopScorers())
+            foreach (KeyValuePair<Player, int> pair in Summary.Instance.GetScorers())
             {
                 //Limit the list to 10 players.
-                if (index > 10) { break; }
+                //if (index > 10) { break; }
 
                 //Add a player.
                 ListViewItem p = new ListViewItem(index.ToString(), 0);
@@ -317,6 +324,22 @@ namespace FIFALoungeMode
             //Unsubscribe from the control and close it.
             _EditTeamsForm.FormClosing -= OnEditTeamsFormClose;
             _EditTeamsForm = null;
+        }
+        /// <summary>
+        /// When the limit FIFA version checkbox is checked.
+        /// </summary>
+        /// <param name="o">The object sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnLimitVersionCheck(object o, EventArgs e)
+        {
+            //Limit FIFA version?
+            _LimitToVersion = ckbVersion.Checked;
+            
+            //Reload all data and ignore anything older than current FIFA version.
+            Summary.Instance.LoadAll(_LimitToVersion);
+
+            //Update all boards.
+            UpdateBoards();
         }
         /// <summary>
         /// When the main form has closed.

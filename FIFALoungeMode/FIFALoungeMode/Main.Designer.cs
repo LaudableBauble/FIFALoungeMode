@@ -41,6 +41,7 @@
             this.mnuItemEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuItemEditProfiles = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuItemEditTeams = new System.Windows.Forms.ToolStripMenuItem();
+            this.ckbVersion = new System.Windows.Forms.CheckBox();
             this.tabMain.SuspendLayout();
             this.tbpStandings.SuspendLayout();
             this.tbpScorers.SuspendLayout();
@@ -161,11 +162,22 @@
             this.mnuItemEditTeams.Size = new System.Drawing.Size(136, 22);
             this.mnuItemEditTeams.Text = "Edit Teams";
             // 
+            // ckbVersion
+            // 
+            this.ckbVersion.AutoSize = true;
+            this.ckbVersion.Location = new System.Drawing.Point(478, 7);
+            this.ckbVersion.Name = "ckbVersion";
+            this.ckbVersion.Size = new System.Drawing.Size(84, 17);
+            this.ckbVersion.TabIndex = 2;
+            this.ckbVersion.Text = "Limit to FIFA";
+            this.ckbVersion.UseVisualStyleBackColor = true;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 262);
+            this.Controls.Add(this.ckbVersion);
             this.Controls.Add(this.tabMain);
             this.Controls.Add(this.mnuMain);
             this.MainMenuStrip = this.mnuMain;
@@ -197,6 +209,7 @@
         private System.Windows.Forms.ListView lstvStandings;
         private System.Windows.Forms.ListView lstvScorers;
         private System.Windows.Forms.ListView lstvGames;
+        private System.Windows.Forms.CheckBox ckbVersion;
 
     }
 }
