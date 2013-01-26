@@ -21,7 +21,6 @@ namespace FIFALoungeMode
         /// </summary>
         public AddGame()
         {
-            //Initialize the form.
             Initialize();
         }
         #endregion
@@ -30,7 +29,7 @@ namespace FIFALoungeMode
         /// <summary>
         /// Initialize the form.
         /// </summary>
-        public void Initialize()
+        protected void Initialize()
         {
             //Initialize the components.
             InitializeComponent();

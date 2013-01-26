@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,6 +10,7 @@ namespace FIFALoungeMode
 {
     public static class Helper
     {
+        #region Summary
         /// <summary>
         /// Save the summary to an xml file.
         /// </summary>
@@ -68,6 +70,17 @@ namespace FIFALoungeMode
             }
             catch { return; }
         }
+        /// <summary>
+        /// Get the path to the summary's file.
+        /// </summary>
+        /// <returns>The summary's path.</returns>
+        public static string GetSummaryPath()
+        {
+            return @"Data\Summary.xml";
+        }
+        #endregion
+
+        #region Profile
         /// <summary>
         /// Save a profile to an xml file.
         /// </summary>
@@ -217,6 +230,19 @@ namespace FIFALoungeMode
             catch { return null; }
         }
         /// <summary>
+        /// Get the path to a particular profile's file.
+        /// </summary>
+        /// <param name="id">The id of the profile.</param>
+        /// <returns>The profile with the given id.</returns>
+        public static string GetProfilePath(int id)
+        {
+            //Return the path.
+            return @"Data\Profiles\P" + id.ToString() + ".xml";
+        }
+        #endregion
+
+        #region Team
+        /// <summary>
         /// Save a team to an xml file.
         /// </summary>
         /// <param name="team">The team to save.</param>
@@ -257,16 +283,16 @@ namespace FIFALoungeMode
         /// <summary>
         /// Load a team.
         /// </summary>
-        /// <param name="id">The id of the team.</param>
+        /// <param name="id">The path to the team's file.</param>
         /// <returns>The loaded team.</returns>
-        public static Team LoadTeam(int id)
+        public static Team LoadTeam(string path)
         {
             //In the all too likely event that everything inexplicably goes to hell.
             try
             {
                 //Set up and load the xml file.
                 XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.Load(GetTeamPath(id));
+                xmlDocument.Load(path);
 
                 //Create the team.
                 Team team = new Team(xmlDocument.GetElementsByTagName("Team")[0].Attributes[1].Value,
@@ -284,6 +310,120 @@ namespace FIFALoungeMode
             }
             catch { return null; }
         }
+        /// <summary>
+        /// Save the team index to an xml file.
+        /// </summary>
+        /// <param name="teams">The teams to index.</param>
+        public static void SaveTeamIndex(List<Team> teams)
+        {
+            //Create the xml writer.
+            XmlTextWriter textWriter = new XmlTextWriter(@"Data\Teams\TeamIndex.xml", null);
+            //Set the formatting to use indent.
+            textWriter.Formatting = Formatting.Indented;
+
+            //Begin with the team index.
+            textWriter.WriteStartDocument();
+            textWriter.WriteStartElement("TeamIndex");
+
+            //Begin with the teams.
+            textWriter.WriteStartElement("Teams");
+            textWriter.WriteAttributeString("Count", teams.Count.ToString());
+
+            //The teams.
+            foreach (Team team in teams)
+            {
+                //Begin with a team.
+                textWriter.WriteStartElement("Team");
+                textWriter.WriteAttributeString("Name", team.Name);
+                textWriter.WriteAttributeString("Id", team.Id.ToString());
+                textWriter.WriteEndElement();
+            }
+
+            //End with the team.
+            textWriter.WriteEndElement();
+
+            //End with the document.
+            textWriter.WriteEndDocument();
+            //Close the writer.
+            textWriter.Close();
+        }
+        /// <summary>
+        /// Load all teams, as specified in the team index.
+        /// </summary>
+        /// <returns>The loaded team index.</returns>
+        public static List<Team> LoadTeamIndex()
+        {
+            //In the all too likely event that everything inexplicably goes to hell.
+            try
+            {
+                //Set up and load the xml file.
+                XmlDocument xmlDocument = new XmlDocument();
+                xmlDocument.Load(@"Data\Teams\TeamIndex.xml");
+
+                //Create the list of teams.
+                List<Team> teams = new List<Team>();
+
+                //The teams.
+                foreach (XmlNode teamNode in xmlDocument.SelectNodes("TeamIndex/Teams/Team"))
+                {
+                    //Load a team.
+                    teams.Add(LoadTeam(int.Parse(teamNode.Attributes.GetNamedItem("Id").Value)));
+                }
+
+                //Return the teams.
+                return teams;
+            }
+            catch { return null; }
+        }
+        /// <summary>
+        /// Load a team.
+        /// </summary>
+        /// <param name="id">The id of the team.</param>
+        /// <returns>The loaded team.</returns>
+        public static Team LoadTeam(int id)
+        {
+            return LoadTeam(GetTeamPath(id));
+        }
+        /// <summary>
+        /// Get the path to a particular team's file.
+        /// </summary>
+        /// <param name="id">The id of the team.</param>
+        /// <returns>The team with the given id.</returns>
+        public static string GetTeamPath(int id)
+        {
+            return @"Data\Teams\T" + id.ToString() + ".xml";
+        }
+        /// <summary>
+        /// Rebuild the team index by going through all the files in the Data/Team folder.
+        /// </summary>
+        public static void RebuildTeamIndex()
+        {
+            //Get all relevant files.
+            Regex reg = new Regex(@"^Data\\Teams\\T\d+\.xml$");
+            List<string> files = Directory.GetFiles(@"Data\Teams\", "*.xml").Where(path => reg.IsMatch(path)).ToList();
+
+            //Load all teams.
+            List<Team> teams = new List<Team>();
+            files.ForEach(file => teams.Add(LoadTeam(file)));
+
+            //Remove any duplicates.
+
+            //Resave all teams and update team index.
+            teams.ForEach(t => SaveTeam(t));
+            SaveTeamIndex(teams);
+        }
+        /// <summary>
+        /// Get a team's id, given a name.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <returns>The id of the team. -1 if the endevaour was unsuccesful.</returns>
+        public static int GetTeamId(string name)
+        {
+            return LoadTeamIndex().Find(t => t.Name.Equals(name)).Id;
+        }
+        #endregion
+
+        #region Game
         /// <summary>
         /// Save a game to an xml file.
         /// </summary>
@@ -322,7 +462,7 @@ namespace FIFALoungeMode
             textWriter.WriteEndElement();
             //The team.
             textWriter.WriteStartElement("Team");
-            textWriter.WriteString(game.HomeFacts.Team.ToString());
+            textWriter.WriteValue(game.HomeFacts.Team.Id);
             textWriter.WriteEndElement();
             //The match side.
             textWriter.WriteStartElement("MatchSide");
@@ -588,6 +728,7 @@ namespace FIFALoungeMode
                 game.HomeFacts = new GameFacts(LoadProfile(int.Parse(xmlDocument.SelectSingleNode("/Game/HomeFacts/Profile").InnerText)));
 
                 //Parse the xml data.
+                game.HomeFacts.Team = LoadTeam(int.Parse(xmlDocument.SelectSingleNode("/Game/HomeFacts/Team").InnerText));
                 game.HomeFacts.MatchSide = (MatchSide)Enum.Parse(typeof(MatchSide), xmlDocument.SelectSingleNode("/Game/HomeFacts/MatchSide").InnerText);
                 game.HomeFacts.Shots = int.Parse(xmlDocument.SelectSingleNode("/Game/HomeFacts/Shots").InnerText);
                 game.HomeFacts.ShotsOnTarget = int.Parse(xmlDocument.SelectSingleNode("/Game/HomeFacts/ShotsOnTarget").InnerText);
@@ -639,6 +780,7 @@ namespace FIFALoungeMode
                 game.AwayFacts = new GameFacts(LoadProfile(int.Parse(xmlDocument.SelectSingleNode("/Game/AwayFacts/Profile").InnerText)));
 
                 //Parse the xml data.
+                game.AwayFacts.Team = LoadTeam(int.Parse(xmlDocument.SelectSingleNode("/Game/AwayFacts/Team").InnerText));
                 game.AwayFacts.MatchSide = (MatchSide)Enum.Parse(typeof(MatchSide), xmlDocument.SelectSingleNode("/Game/AwayFacts/MatchSide").InnerText);
                 game.AwayFacts.Shots = int.Parse(xmlDocument.SelectSingleNode("/Game/AwayFacts/Shots").InnerText);
                 game.AwayFacts.ShotsOnTarget = int.Parse(xmlDocument.SelectSingleNode("/Game/AwayFacts/ShotsOnTarget").InnerText);
@@ -691,10 +833,23 @@ namespace FIFALoungeMode
             catch { return null; }
         }
         /// <summary>
+        /// Get the path to a particular game's file.
+        /// </summary>
+        /// <param name="id">The id of the game.</param>
+        /// <returns>The game with the given id.</returns>
+        public static string GetGamePath(int id)
+        {
+            //Return the path.
+            return @"Data\Games\G" + id.ToString() + ".xml";
+        }
+        #endregion
+
+        #region Player
+        /// <summary>
         /// Save a player to an xml file.
         /// </summary>
         /// <param name="player">The player to save.</param>
-        public static void SaveSummary(Player player)
+        public static void SavePlayer(Player player)
         {
             //Create the xml writer.
             XmlTextWriter textWriter = new XmlTextWriter("", null);
@@ -727,44 +882,6 @@ namespace FIFALoungeMode
             textWriter.Close();
         }
         /// <summary>
-        /// Get the path to a particular profile's file.
-        /// </summary>
-        /// <param name="id">The id of the profile.</param>
-        /// <returns>The profile with the given id.</returns>
-        public static string GetProfilePath(int id)
-        {
-            //Return the path.
-            return @"Data\Profiles\P" + id.ToString() + ".xml";
-        }
-        /// <summary>
-        /// Get the path to a particular team's file.
-        /// </summary>
-        /// <param name="id">The id of the team.</param>
-        /// <returns>The team with the given id.</returns>
-        public static string GetTeamPath(int id)
-        {
-            //Return the path.
-            return @"Data\Teams\T" + id.ToString() + ".xml";
-        }
-        /// <summary>
-        /// Get the path to a particular game's file.
-        /// </summary>
-        /// <param name="id">The id of the game.</param>
-        /// <returns>The game with the given id.</returns>
-        public static string GetGamePath(int id)
-        {
-            //Return the path.
-            return @"Data\Games\G" + id.ToString() + ".xml";
-        }
-        /// <summary>
-        /// Get the path to the summary's file.
-        /// </summary>
-        /// <returns>The summary's path.</returns>
-        public static string GetSummaryPath()
-        {
-            return @"Data\Summary.xml";
-        }
-        /// <summary>
         /// Create a player instance from a jangled set of characters, ie. it's id.
         /// The id is a mix of the player's team's id and its own name. The denominator is a ':'.
         /// </summary>
@@ -791,5 +908,6 @@ namespace FIFALoungeMode
             //No player found.
             return null;
         }
+        #endregion
     }
 }

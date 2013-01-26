@@ -32,7 +32,6 @@ namespace FIFALoungeMode
         /// <param name="profile">The profile.</param>
         public GameFacts(Profile profile)
         {
-            //Initialize the game facts.
             Initialize(profile);
         }
         #endregion
@@ -42,11 +41,11 @@ namespace FIFALoungeMode
         /// Initialize the game facts.
         /// </summary>
         /// <param name="profile">The profile.</param>
-        public void Initialize(Profile profile)
+        protected void Initialize(Profile profile)
         {
             //Initialize some stuff.
             _Profile = profile;
-            _Team = (profile != null) ? profile.Team : null;
+            _Team = null;
             _Bookings = new List<BookingType>();
             _GoalsScored = new List<Goal>();
             _GoalsConceded = new List<Goal>();

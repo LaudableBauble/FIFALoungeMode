@@ -15,10 +15,9 @@ namespace FIFALoungeMode
         private AddGame _AddGameForm;
         private EditProfiles _EditProfilesForm;
         private EditTeams _EditTeamsForm;
-        private ListView _Board;
-        private ListView _ScorerBoard;
-        private ListView _GamesBoard;
-        private ListViewColumnSorter _ListSorter;
+        private ListViewColumnSorter _StandingsSorter;
+        private ListViewColumnSorter _ScorersSorter;
+        private ListViewColumnSorter _GamesSorter;
         #endregion
 
         #region Constructors
@@ -38,131 +37,85 @@ namespace FIFALoungeMode
             Helper.LoadSummary();
             Dictionary<Player, int> scores = Summary.Instance.GetTopScorers();
 
-            //Create the menu.
-            CreateMenu();
-
             //Create the tab control.
-            TabControl tab = new TabControl();
-            tab.Width = this.Width;
-            tab.Height = this.Height - this.MainMenuStrip.Height;
-            tab.Location = new Point(0, this.MainMenuStrip.Height);
-            TabPage board = new TabPage("Standings");
-            TabPage scorers = new TabPage("Top Scorers");
-            TabPage games = new TabPage("Recent Games");
-            tab.TabPages.Add(board);
-            tab.TabPages.Add(scorers);
-            tab.TabPages.Add(games);
-
-            //Set up the tab control.
-            Controls.Add(tab);
+            tabMain.Width = this.Width;
+            tabMain.Height = this.Height - this.MainMenuStrip.Height;
+            tabMain.Location = new Point(0, this.MainMenuStrip.Height);
 
             //Create the board.
-            _Board = new ListView();
-            _Board.Bounds = new Rectangle(new Point(0, 0), tab.Size);
-            _Board.View = View.Details;
-            _Board.LabelEdit = false;
-            _Board.AllowColumnReorder = false;
-            _Board.GridLines = true;
+            lstvStandings.View = View.Details;
+            lstvStandings.LabelEdit = false;
+            lstvStandings.AllowColumnReorder = false;
+            lstvStandings.GridLines = true;
 
             //Create an instance of a ListView column sorter and assign it to the ListView control.
-            _ListSorter = new ListViewColumnSorter();
-            _Board.ListViewItemSorter = _ListSorter;
+            _StandingsSorter = new ListViewColumnSorter();
+            _ScorersSorter = new ListViewColumnSorter();
+            _GamesSorter = new ListViewColumnSorter();
+            lstvStandings.ListViewItemSorter = _StandingsSorter;
+            lstvScorers.ListViewItemSorter = _ScorersSorter;
+            lstvGames.ListViewItemSorter = _GamesSorter;
 
             //Create the scorer's board.
-            _ScorerBoard = new ListView();
-            _ScorerBoard.Bounds = new Rectangle(new Point(0, 0), tab.Size);
-            _ScorerBoard.View = View.Details;
-            _ScorerBoard.LabelEdit = false;
-            _ScorerBoard.AllowColumnReorder = false;
-            _ScorerBoard.GridLines = true;
+            lstvScorers.View = View.Details;
+            lstvScorers.LabelEdit = false;
+            lstvScorers.AllowColumnReorder = false;
+            lstvScorers.GridLines = true;
 
             //Create the list of recent games.
-            _GamesBoard = new ListView();
-            _GamesBoard.Bounds = new Rectangle(new Point(0, 0), tab.Size);
-            _GamesBoard.View = View.Details;
-            _GamesBoard.LabelEdit = false;
-            _GamesBoard.AllowColumnReorder = false;
-            _GamesBoard.GridLines = false;
+            lstvGames.View = View.Details;
+            lstvGames.LabelEdit = false;
+            lstvGames.AllowColumnReorder = false;
+            lstvGames.GridLines = false;
 
             //Set up the boards.
             SetUpBoards();
-            board.Controls.Add(_Board);
-            scorers.Controls.Add(_ScorerBoard);
-            games.Controls.Add(_GamesBoard);
 
             //Subscribe to events.
             this.FormClosed += OnFormClose;
-            _Board.ColumnClick += OnColumnClick;
+            lstvStandings.ColumnClick += OnColumnClick;
+            lstvScorers.ColumnClick += OnColumnClick;
+            lstvGames.ColumnClick += OnColumnClick;
+            mnuItemAddGame.Click += OnAddGameMenuClick;
+            mnuItemEditProfiles.Click += OnEditProfilesMenuClick;
+            mnuItemEditTeams.Click += OnEditTeamsMenuClick;
         }
         #endregion
 
         #region Methods
-        /// <summary>
-        /// Create the menu.
-        /// </summary>
-        public void CreateMenu()
-        {
-            //Create the menu.
-            MenuStrip menu = new MenuStrip();
-
-            //File.
-            ToolStripMenuItem file = new ToolStripMenuItem("File");
-            menu.Items.Add(file);
-
-            //Add Game.
-            ToolStripMenuItem addGame = new ToolStripMenuItem("Add Game");
-            file.DropDownItems.Add(addGame);
-            addGame.Click += OnAddGameMenuClick;
-
-            //Edit.
-            ToolStripMenuItem edit = new ToolStripMenuItem("Edit");
-            menu.Items.Add(edit);
-
-            //Edit Profiles.
-            ToolStripMenuItem editProfiles = new ToolStripMenuItem("Edit Profiles");
-            edit.DropDownItems.Add(editProfiles);
-            editProfiles.Click += OnEditProfilesMenuClick;
-
-            //Edit Teams.
-            ToolStripMenuItem editTeams = new ToolStripMenuItem("Edit Teams");
-            edit.DropDownItems.Add(editTeams);
-            editTeams.Click += OnEditTeamsMenuClick;
-
-            //Finalize the menu.
-            this.MainMenuStrip = menu;
-            Controls.Add(menu);
-        }
         /// <summary>
         /// Set up the boards.
         /// </summary>
         public void SetUpBoards()
         {
             //Reset the boards.
-            _Board.Clear();
-            _ScorerBoard.Clear();
-            _GamesBoard.Items.Clear();
+            lstvStandings.Clear();
+            lstvScorers.Clear();
+            lstvGames.Items.Clear();
 
             //Add the columns.
-            _Board.Columns.Add("Profile", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Points", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Played", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Wins", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Draws", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Losses", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Scored", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Conceded", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Difference", -2, HorizontalAlignment.Left);
-            _Board.Columns.Add("Form Curve", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Profile", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Points", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Played", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Wins", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Draws", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Losses", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Scored", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Conceded", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Difference", -2, HorizontalAlignment.Left);
+            lstvStandings.Columns.Add("Form Curve", -2, HorizontalAlignment.Left);
 
-            _ScorerBoard.Columns.Add("Position", -2, HorizontalAlignment.Left);
-            _ScorerBoard.Columns.Add("Player", -2, HorizontalAlignment.Left);
-            _ScorerBoard.Columns.Add("Goals", -2, HorizontalAlignment.Left);
-            _ScorerBoard.Columns.Add("Team", -2, HorizontalAlignment.Left);
+            lstvScorers.Columns.Add("Position", -2, HorizontalAlignment.Left);
+            lstvScorers.Columns.Add("Player", -2, HorizontalAlignment.Left);
+            lstvScorers.Columns.Add("Goals", -2, HorizontalAlignment.Left);
+            lstvScorers.Columns.Add("Team", -2, HorizontalAlignment.Left);
 
-            _GamesBoard.Columns.Add("Date", -2, HorizontalAlignment.Left);
-            _GamesBoard.Columns.Add("Home Team", -2, HorizontalAlignment.Left);
-            _GamesBoard.Columns.Add("Result", -2, HorizontalAlignment.Left);
-            _GamesBoard.Columns.Add("Away Team", -2, HorizontalAlignment.Left);
+            lstvGames.Columns.Add("Date", -2, HorizontalAlignment.Left);
+            lstvGames.Columns.Add("Home Profile", -2, HorizontalAlignment.Left);
+            lstvGames.Columns.Add("Result", -2, HorizontalAlignment.Left);
+            lstvGames.Columns.Add("Away Profile", -2, HorizontalAlignment.Left);
+            lstvGames.Columns.Add("Home Team", -2, HorizontalAlignment.Left);
+            lstvGames.Columns.Add("Away Team", -2, HorizontalAlignment.Left);
 
             //Add the boards.
             UpdateBoards();
@@ -173,9 +126,9 @@ namespace FIFALoungeMode
         public void UpdateBoards()
         {
             //Remove all items.
-            _Board.Items.Clear();
-            _ScorerBoard.Items.Clear();
-            _GamesBoard.Items.Clear();
+            lstvStandings.Items.Clear();
+            lstvScorers.Items.Clear();
+            lstvGames.Items.Clear();
 
             //Add the profiles.
             foreach (Profile profile in Summary.Instance.Profiles)
@@ -195,7 +148,7 @@ namespace FIFALoungeMode
                 p.SubItems.Add(Summary.Instance.GetFormCurve(profile, 5));
 
                 //Add the profile row to the board.
-                _Board.Items.Add(p);
+                lstvStandings.Items.Add(p);
             }
 
             //The index.
@@ -216,7 +169,7 @@ namespace FIFALoungeMode
                 p.SubItems.Add(pair.Key.Team.Name);
 
                 //Add the player row to the board.
-                _ScorerBoard.Items.Add(p);
+                lstvScorers.Items.Add(p);
 
                 //Increment the index.
                 index++;
@@ -233,12 +186,14 @@ namespace FIFALoungeMode
                 ListViewItem g = new ListViewItem(game.Date.ToString("d'/'M'/'y"), 0);
 
                 //The data.
-                g.SubItems.Add(game.HomeFacts.Team.ToString());
+                g.SubItems.Add(game.HomeFacts.Profile.Name);
                 g.SubItems.Add(game.GetResult());
+                g.SubItems.Add(game.AwayFacts.Profile.Name);
+                g.SubItems.Add(game.HomeFacts.Team.ToString());
                 g.SubItems.Add(game.AwayFacts.Team.ToString());
 
                 //Add the item row to the board.
-                _GamesBoard.Items.Add(g);
+                lstvGames.Items.Add(g);
             }
         }
         /// <summary>
@@ -261,22 +216,26 @@ namespace FIFALoungeMode
         /// <param name="e"></param>
         private void OnColumnClick(object o, ColumnClickEventArgs e)
         {
-            // Determine if clicked column is already the column that is being sorted.
-            if (e.Column == _ListSorter.SortColumn)
+            //Get the list view and column sorter.
+            ListView listView = (o as ListView);
+            ListViewColumnSorter sorter = (listView.ListViewItemSorter as ListViewColumnSorter);
+
+            // Determine if the clicked column is already the column that is being sorted.
+            if (e.Column == sorter.SortColumn)
             {
                 // Reverse the current sort direction for this column.
-                if (_ListSorter.Order == SortOrder.Ascending) { _ListSorter.Order = SortOrder.Descending; }
-                else { _ListSorter.Order = SortOrder.Ascending; }
+                if (sorter.Order == SortOrder.Ascending) { sorter.Order = SortOrder.Descending; }
+                else { sorter.Order = SortOrder.Ascending; }
             }
             else
             {
                 // Set the column number that is to be sorted; default to descending.
-                _ListSorter.SortColumn = e.Column;
-                _ListSorter.Order = SortOrder.Descending;
+                sorter.SortColumn = e.Column;
+                sorter.Order = SortOrder.Descending;
             }
 
             // Perform the sort with these new sort options.
-            this._Board.Sort();
+            listView.Sort();
         }
         /// <summary>
         /// If the user wants to add a game to the mix.
