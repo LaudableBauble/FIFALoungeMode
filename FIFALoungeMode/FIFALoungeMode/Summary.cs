@@ -169,7 +169,8 @@ namespace FIFALoungeMode
         /// <summary>
         /// Get a dictionary of all scorers.
         /// </summary>
-        public Dictionary<Player, int> GetScorers()
+        /// <param name="limitToVersion">Whether limit data from games of the current FIFA version.</param>
+        public Dictionary<Player, int> GetScorers(bool limitToVersion)
         {
             //The complete and final list of top scorers.
             Dictionary<Player, int> scorers = new Dictionary<Player, int>();
@@ -178,7 +179,7 @@ namespace FIFALoungeMode
             foreach (Profile profile in _Profiles)
             {
                 //For each scorer.
-                foreach (KeyValuePair<Player, int> item in profile.TopScorers)
+                foreach (KeyValuePair<Player, int> item in profile.GetStatPackage(limitToVersion ? Summary.Instance.CurrentFIFAVersion : -1).Scorers)
                 {
                     //Try to find a source instance of he same player.
                     Player source = Helper.ContainsPlayer(scorers.Keys.ToList(), item.Key);

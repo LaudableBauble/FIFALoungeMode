@@ -34,11 +34,14 @@ namespace FIFALoungeMode
             this.Width = 600;
             this.Height = 300;
 
-            //Don't limit to current FIFA version.
+            //Don't limit only to current FIFA version.
             _LimitToVersion = false;
 
             //Load the summary and all profiles.
             Helper.LoadSummary();
+
+            //Summary.Instance.ResetAllProfiles();
+            //Summary.Instance.SaveAllProfiles();
 
             //Add a label to the FIFA version checkbox.
             ckbVersion.Text = "Limit to FIFA " + Summary.Instance.CurrentFIFAVersion;
@@ -123,6 +126,7 @@ namespace FIFALoungeMode
             lstvGames.Columns.Add("Away Profile", -2, HorizontalAlignment.Left);
             lstvGames.Columns.Add("Home Team", -2, HorizontalAlignment.Left);
             lstvGames.Columns.Add("Away Team", -2, HorizontalAlignment.Left);
+            lstvGames.Columns.Add("FIFA Version", -2, HorizontalAlignment.Left);
 
             //Add the boards.
             UpdateBoards();
@@ -143,15 +147,18 @@ namespace FIFALoungeMode
                 //Add a profile.
                 ListViewItem p = new ListViewItem(profile.Name, 0);
 
+                //Get the statistics.
+                ProfileStatPackage stats = profile.GetStatPackage(_LimitToVersion ? Summary.Instance.CurrentFIFAVersion : -1);
+
                 //The data.
-                p.SubItems.Add(profile.Points.ToString());
-                p.SubItems.Add(profile.Games.ToString());
-                p.SubItems.Add(profile.Wins.ToString());
-                p.SubItems.Add(profile.Draws.ToString());
-                p.SubItems.Add(profile.Losses.ToString());
-                p.SubItems.Add(profile.GoalsScored.ToString());
-                p.SubItems.Add(profile.GoalsConceded.ToString());
-                p.SubItems.Add((profile.GoalsScored - profile.GoalsConceded).ToString());
+                p.SubItems.Add(stats.Points.ToString());
+                p.SubItems.Add(stats.Games.ToString());
+                p.SubItems.Add(stats.Wins.ToString());
+                p.SubItems.Add(stats.Draws.ToString());
+                p.SubItems.Add(stats.Losses.ToString());
+                p.SubItems.Add(stats.GoalsScored.ToString());
+                p.SubItems.Add(stats.GoalsConceded.ToString());
+                p.SubItems.Add((stats.GoalsScored - stats.GoalsConceded).ToString());
                 p.SubItems.Add(Summary.Instance.GetFormCurve(profile, 5));
 
                 //Add the profile row to the board.
@@ -162,7 +169,7 @@ namespace FIFALoungeMode
             int index = 1;
 
             //Add the top scorers.
-            foreach (KeyValuePair<Player, int> pair in Summary.Instance.GetScorers())
+            foreach (KeyValuePair<Player, int> pair in Summary.Instance.GetScorers(_LimitToVersion))
             {
                 //Limit the list to 10 players.
                 //if (index > 10) { break; }
@@ -198,6 +205,7 @@ namespace FIFALoungeMode
                 g.SubItems.Add(game.AwayFacts.Profile.Name);
                 g.SubItems.Add(game.HomeFacts.Team.ToString());
                 g.SubItems.Add(game.AwayFacts.Team.ToString());
+                g.SubItems.Add(game.FIFAVersion.ToString());
 
                 //Add the item row to the board.
                 lstvGames.Items.Add(g);
@@ -334,7 +342,7 @@ namespace FIFALoungeMode
         {
             //Limit FIFA version?
             _LimitToVersion = ckbVersion.Checked;
-            
+
             //Reload all data and ignore anything older than current FIFA version.
             Summary.Instance.LoadAll(_LimitToVersion);
 

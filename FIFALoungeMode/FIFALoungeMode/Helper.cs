@@ -95,84 +95,112 @@ namespace FIFALoungeMode
             //Begin with the profile.
             textWriter.WriteStartDocument();
             textWriter.WriteStartElement("Profile");
-
-            //The id.
-            textWriter.WriteStartElement("Id");
-            textWriter.WriteValue(profile.Id);
-            textWriter.WriteEndElement();
-            //The name.
-            textWriter.WriteStartElement("Name");
-            textWriter.WriteValue(profile.Name);
-            textWriter.WriteEndElement();
-            //The team.
-            textWriter.WriteStartElement("Team");
-            textWriter.WriteValue(profile.Team.Id);
-            textWriter.WriteEndElement();
-            //The games.
-            textWriter.WriteStartElement("Games");
-            textWriter.WriteValue(profile.Games);
-            textWriter.WriteEndElement();
-            //The points.
-            textWriter.WriteStartElement("Points");
-            textWriter.WriteValue(profile.Points);
-            textWriter.WriteEndElement();
-            //The wins.
-            textWriter.WriteStartElement("Wins");
-            textWriter.WriteValue(profile.Wins);
-            textWriter.WriteEndElement();
-            //The draws.
-            textWriter.WriteStartElement("Draws");
-            textWriter.WriteValue(profile.Draws);
-            textWriter.WriteEndElement();
-            //The losses.
-            textWriter.WriteStartElement("Losses");
-            textWriter.WriteValue(profile.Losses);
-            textWriter.WriteEndElement();
-            //The goals scored.
-            textWriter.WriteStartElement("GoalsScored");
-            textWriter.WriteValue(profile.GoalsScored);
-            textWriter.WriteEndElement();
-            //The goals conceded.
-            textWriter.WriteStartElement("GoalsConceded");
-            textWriter.WriteValue(profile.GoalsConceded);
-            textWriter.WriteEndElement();
-
-            //Begin with the list of teams.
-            textWriter.WriteStartElement("Teams");
-            textWriter.WriteAttributeString("Count", profile.PreviousTeams.Count.ToString());
-
-            //The teams.
-            foreach (Team team in profile.PreviousTeams)
             {
-                //Begin with a team.
+
+                //The id.
+                textWriter.WriteStartElement("Id");
+                textWriter.WriteValue(profile.Id);
+                textWriter.WriteEndElement();
+                //The name.
+                textWriter.WriteStartElement("Name");
+                textWriter.WriteValue(profile.Name);
+                textWriter.WriteEndElement();
+                //The team.
                 textWriter.WriteStartElement("Team");
-                textWriter.WriteAttributeString("Id", team.Id.ToString());
+                textWriter.WriteValue(profile.Team.Id);
                 textWriter.WriteEndElement();
 
-                //Save the team to the harddrive.
-                SaveTeam(team);
-            }
+                //Begin with the list of teams.
+                textWriter.WriteStartElement("Teams");
+                textWriter.WriteAttributeString("Count", profile.PreviousTeams.Count.ToString());
+                {
 
-            //End with the teams.
-            textWriter.WriteEndElement();
+                    //The teams.
+                    foreach (Team team in profile.PreviousTeams)
+                    {
+                        //Begin with a team.
+                        textWriter.WriteStartElement("Team");
+                        textWriter.WriteAttributeString("Id", team.Id.ToString());
+                        textWriter.WriteEndElement();
 
-            //Begin with the list of scorers.
-            textWriter.WriteStartElement("Scorers");
-            textWriter.WriteAttributeString("Count", profile.TopScorers.Count.ToString());
+                        //Save the team to the harddrive.
+                        SaveTeam(team);
+                    }
 
-            //The top scorers.
-            foreach (KeyValuePair<Player, int> pair in profile.TopScorers)
-            {
-                //Begin with a scorer.
-                textWriter.WriteStartElement("Scorer");
-                textWriter.WriteAttributeString("Id", pair.Key.Team.Id.ToString() + ":" + pair.Key.Name);
-                textWriter.WriteAttributeString("Goals", pair.Value.ToString());
+                }
+                //End with the teams.
                 textWriter.WriteEndElement();
+
+                //Begin with the list of statistics.
+                textWriter.WriteStartElement("Statistics");
+                textWriter.WriteAttributeString("Count", profile.Statistics.Count.ToString());
+                {
+
+                    //The statistics.
+                    foreach (ProfileStatPackage stats in profile.Statistics)
+                    {
+                        //Begin with a stat package.
+                        textWriter.WriteStartElement("StatPackage");
+                        textWriter.WriteAttributeString("Version", stats.Version.ToString());
+                        {
+
+                            //The games.
+                            textWriter.WriteStartElement("Games");
+                            textWriter.WriteValue(stats.Games);
+                            textWriter.WriteEndElement();
+                            //The points.
+                            textWriter.WriteStartElement("Points");
+                            textWriter.WriteValue(stats.Points);
+                            textWriter.WriteEndElement();
+                            //The wins.
+                            textWriter.WriteStartElement("Wins");
+                            textWriter.WriteValue(stats.Wins);
+                            textWriter.WriteEndElement();
+                            //The draws.
+                            textWriter.WriteStartElement("Draws");
+                            textWriter.WriteValue(stats.Draws);
+                            textWriter.WriteEndElement();
+                            //The losses.
+                            textWriter.WriteStartElement("Losses");
+                            textWriter.WriteValue(stats.Losses);
+                            textWriter.WriteEndElement();
+                            //The goals scored.
+                            textWriter.WriteStartElement("GoalsScored");
+                            textWriter.WriteValue(stats.GoalsScored);
+                            textWriter.WriteEndElement();
+                            //The goals conceded.
+                            textWriter.WriteStartElement("GoalsConceded");
+                            textWriter.WriteValue(stats.GoalsConceded);
+                            textWriter.WriteEndElement();
+
+                            //Begin with the list of scorers.
+                            textWriter.WriteStartElement("Scorers");
+                            textWriter.WriteAttributeString("Count", stats.Scorers.Count.ToString());
+                            {
+
+                                //The top scorers.
+                                foreach (KeyValuePair<Player, int> pair in stats.Scorers)
+                                {
+                                    //Begin with a scorer.
+                                    textWriter.WriteStartElement("Scorer");
+                                    textWriter.WriteAttributeString("Id", pair.Key.Team.Id.ToString() + ":" + pair.Key.Name);
+                                    textWriter.WriteAttributeString("Goals", pair.Value.ToString());
+                                    textWriter.WriteEndElement();
+                                }
+
+                            }
+                            //End with the scorers.
+                            textWriter.WriteEndElement();
+
+                        }
+                        //End the stat package.
+                        textWriter.WriteEndElement();
+                    }
+                }
+                //End with the statistics.
+                textWriter.WriteEndElement();
+
             }
-
-            //End with the scorers.
-            textWriter.WriteEndElement();
-
             //End with the profile.
             textWriter.WriteEndElement();
 
@@ -200,15 +228,6 @@ namespace FIFALoungeMode
                     int.Parse(xmlDocument.SelectSingleNode("/Profile/Id").InnerText),
                     Summary.Instance.GetTeam(int.Parse(xmlDocument.SelectSingleNode("/Profile/Team").InnerText)));
 
-                //Parse the xml data.
-                profile.Games = int.Parse(xmlDocument.SelectSingleNode("/Profile/Games").InnerText);
-                profile.Points = int.Parse(xmlDocument.SelectSingleNode("/Profile/Points").InnerText);
-                profile.Wins = int.Parse(xmlDocument.SelectSingleNode("/Profile/Wins").InnerText);
-                profile.Draws = int.Parse(xmlDocument.SelectSingleNode("/Profile/Draws").InnerText);
-                profile.Losses = int.Parse(xmlDocument.SelectSingleNode("/Profile/Losses").InnerText);
-                profile.GoalsScored = int.Parse(xmlDocument.SelectSingleNode("/Profile/GoalsScored").InnerText);
-                profile.GoalsConceded = int.Parse(xmlDocument.SelectSingleNode("/Profile/GoalsConceded").InnerText);
-
                 //The previous teams.
                 foreach (XmlNode teamNode in xmlDocument.SelectNodes("Profile/Teams/Team"))
                 {
@@ -216,12 +235,31 @@ namespace FIFALoungeMode
                     profile.PreviousTeams.Add(LoadTeam(int.Parse(teamNode.Attributes.GetNamedItem("Id").Value)));
                 }
 
-                //The top scorers.
-                foreach (XmlNode scorerNode in xmlDocument.SelectNodes("Profile/Scorers/Scorer"))
+                //The statistics.
+                foreach (XmlNode statNode in xmlDocument.SelectNodes("Profile/Statistics/StatPackage"))
                 {
-                    //Load a scorer.
-                    profile.AddScorer(GetPlayer(scorerNode.Attributes.GetNamedItem("Id").Value),
-                        int.Parse(scorerNode.Attributes.GetNamedItem("Goals").Value));
+                    //Create the stat package.
+                    ProfileStatPackage stats = new ProfileStatPackage(profile, int.Parse(statNode.Attributes.GetNamedItem("Version").Value));
+
+                    //Parse the xml data.
+                    stats.Games = int.Parse(statNode.SelectSingleNode("Games").InnerText);
+                    stats.Points = int.Parse(statNode.SelectSingleNode("Points").InnerText);
+                    stats.Wins = int.Parse(statNode.SelectSingleNode("Wins").InnerText);
+                    stats.Draws = int.Parse(statNode.SelectSingleNode("Draws").InnerText);
+                    stats.Losses = int.Parse(statNode.SelectSingleNode("Losses").InnerText);
+                    stats.GoalsScored = int.Parse(statNode.SelectSingleNode("GoalsScored").InnerText);
+                    stats.GoalsConceded = int.Parse(statNode.SelectSingleNode("GoalsConceded").InnerText);
+
+                    //The scorers.
+                    foreach (XmlNode scorerNode in statNode.SelectNodes("Scorers/Scorer"))
+                    {
+                        //Load a scorer.
+                        stats.AddScorer(GetPlayer(scorerNode.Attributes.GetNamedItem("Id").Value),
+                            int.Parse(scorerNode.Attributes.GetNamedItem("Goals").Value));
+                    }
+
+                    //Add the stat package.
+                    profile.Statistics.Add(stats);
                 }
 
                 //Return the profile.

@@ -58,6 +58,7 @@
     <Compile Include="AddGame.Designer.cs">
       <DependentUpon>AddGame.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProfileStatPackage.cs" />
     <Compile Include="EditProfiles.cs">
       <SubType>Form</SubType>
     </Compile>
